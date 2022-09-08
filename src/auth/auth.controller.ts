@@ -1,10 +1,13 @@
 import { Controller, Get, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { catchError, of } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(@Inject('AUTH_SERVICE') private client: ClientProxy) {}
+  constructor(
+    @Inject('AUTH_SERVICE') private client: ClientProxy,
+    private authService: AuthService,
+  ) {}
   @Get('/ping')
   ping() {
     return this.client.send({ cmd: 'ping' }, {});
@@ -12,16 +15,11 @@ export class AuthController {
 
   @Get('/user')
   user() {
-    return this.client
-      .send(
-        { cmd: 'user' },
-        {
-          email: 'vinayrawat@gmail.com',
-          firstName: 'Vinay',
-          lastName: 'Rawat',
-          password: 'vinayrawat',
-        },
-      )
-      .pipe(catchError((err) => of(err)));
+    return this.authService.createUser({
+      email: 'vinayrawat@gmail.com',
+      firstName: 'Vinay',
+      lastName: 'Rawat',
+      password: 'vinayrawat',
+    });
   }
 }
